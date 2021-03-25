@@ -1,1 +1,2 @@
-# Smart_office_school
+# NOCOVICE
+MDP 프로젝트 "No Covice"
