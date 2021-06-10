@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public class DB {
     public String sendGet(String url) throws Exception {
@@ -18,8 +17,7 @@ public class DB {
         con.setConnectTimeout(10000);
         con.setReadTimeout(5000);
 
-
-        Charset charset = StandardCharsets.UTF_8;
+        Charset charset = Charset.forName("UTF-8");
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
         String inputLine;
         StringBuffer response = new StringBuffer();
@@ -32,8 +30,8 @@ public class DB {
         return response.toString();
     }
 
-    public int sendPost(String url, String uNo, String uId, String uPw, String lastCheck) throws Exception {
-        String params = "?uNo=" + uNo + "&uId=" + uId + "&uPw=" + uPw + "&lastCheck=" + lastCheck;
+    public int updateUser(String url, String uNo, String uId, String uPw, String lastCheck) throws Exception {
+        String params = "?target=user&uNo=" + uNo + "&uId=" + uId + "&uPw=" + uPw + "&lastCheck=" + lastCheck;
 
         URL obj = new URL(url + params);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -43,8 +41,7 @@ public class DB {
         con.setConnectTimeout(10000);
         con.setReadTimeout(5000);
 
-
-        Charset charset = StandardCharsets.UTF_8;
+        Charset charset = Charset.forName("UTF-8");
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
         String inputLine;
         StringBuffer response = new StringBuffer();
@@ -61,10 +58,94 @@ public class DB {
         }
     }
 
-    public JSONArray jsonParser(String stringData) throws Exception {
+    public int insertBook(String url, String uNo, String startTime, String endTime) throws Exception {
+        String params = "?target=room&uNo=" + uNo + "&startTime=" + startTime + "&endTime=" + endTime + "&mode=ins";
+
+        URL obj = new URL(url + params);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
+        con.setConnectTimeout(10000);
+        con.setReadTimeout(5000);
+
+        Charset charset = Charset.forName("UTF-8");
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        if(response.toString().contains("successful")) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    public int deleteBook(String url, String startTime) throws Exception {
+        String params = "?target=room&startTime=" + startTime + "&mode=del";
+
+        URL obj = new URL(url + params);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
+        con.setConnectTimeout(10000);
+        con.setReadTimeout(5000);
+
+        Charset charset = Charset.forName("UTF-8");
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        if(response.toString().contains("successful")) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    public int updateLED(String url, int ledNum, int stmt) throws Exception {
+        String params = "?target=led&led_num=" + ledNum + "&stmt=" + stmt;
+
+        URL obj = new URL(url + params);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36");
+        con.setConnectTimeout(10000);
+        con.setReadTimeout(5000);
+
+        Charset charset = Charset.forName("UTF-8");
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        if(response.toString().contains("successful")) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    public JSONArray jsonArrayParser(String stringData, String key) throws Exception {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject)jsonParser.parse(stringData);
-        JSONArray jsonArray = (JSONArray) jsonObject.get("result");
+        JSONArray jsonArray = (JSONArray) jsonObject.get(key);
 
         return jsonArray;
     }
@@ -112,12 +193,24 @@ public class DB {
         return value.toString();
     }
 
-    public String getDate() {
+    public String getDate(String url) {
         try {
-            String serverData = sendGet("http://192.168.0.34");
+            String serverData = sendGet(url);
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject)jsonParser.parse(serverData);
             return jsonObject.get("today").toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getTime(String url) {
+        try {
+            String serverData = sendGet(url);
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject)jsonParser.parse(serverData);
+            return jsonObject.get("now").toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
