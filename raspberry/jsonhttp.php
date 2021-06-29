@@ -2,44 +2,103 @@
 $con = mysqli_connect('localhost', 'root', '1234', 'test_one');
 
 if($_SERVER['REQUEST_METHOD']=='POST') {
+	$target = $_GET['target'];
+	$mode = $_GET['mode'];
 	$uNo = $_GET['uNo'];
 	$uId = $_GET['uId'];
 	$uPw = $_GET['uPw'];
 	$lastCheck = $_GET['lastCheck'];
+	$startTime = $_GET['startTime'];
+	$endTime = $_GET['endTime'];
+	$led_num = $_GET['led_num'];
+	$stmt = $_GET['stmt'];
 
-	$query = "update user set uId='$uId', uPw='$uPw', lastCheck='$lastCheck' where uNo=$uNo";
-	if(mysqli_query($con, $query)) {
-		echo "update for uNo $uNo successful";
-	} else {
-		echo "failed";
+	if($target == "user") {
+		$query = "update user set uId='$uId', uPw='$uPw', lastCheck='$lastCheck' where uNo=$uNo";
+		if(mysqli_query($con, $query)) {
+			echo "update for uNo $uNo successful";
+		} else {
+			echo "failed";
+		}
+	} else if($target == "room") {
+		$query = "";
+		if($mode == "ins") {
+			$query = "insert into room_book values($uNo, '$startTime', '$endTime')";
+		} else if($mode == "del") {
+			$query = "delete from room_book where startTime = '$startTime'";
+		}
+		if(mysqli_query($con, $query)) {
+			echo "insert/delete successful";
+		} else {
+			echo "failed";
+		}
+	} else if($target == "led") {
+		$query = "update led set stmt = $stmt where led_num = $led_num";
+		if(mysqli_query($con, $query)) {
+			echo "update successful";
+		} else {
+			echo "failed";
+		}
 	}
 } else {
-	$query = 'select * from user';
+	$userQuery = 'select * from user';
+	$roomQuery = 'select * from room_book';
+	$ledQuery = 'select * from led';
 
-	if($result = mysqli_query($con, $query)) {
-		$rowNum = mysqli_num_rows($result);
+	if($userResult = mysqli_query($con, $userQuery)) {
+		$userNum = mysqli_num_rows($userResult);
 		echo '{';
 
 		echo "\"today\":\""; echo date('Y-m-d', time()); echo "\",";
+		echo "\"now\":\""; echo date('H:i:s', time()); echo "\",";
 
-		echo "\"rownum\":\"$rowNum\",";
-		echo "\"result\":";
+		echo "\"usernum\":\"$userNum\",";
+		echo "\"users\":";
 
 		echo "[";
-		for($i = 0; $i < $rowNum; $i++) {
-			$row = mysqli_fetch_array($result);
+		for($i = 0; $i < $userNum; $i++) {
+			$row = mysqli_fetch_array($userResult);
 			echo "{";
 			echo "\"uNo\":\"$row[uNo]\", \"uId\":\"$row[uId]\", \"uPw\":\"$row[uPw]\", \"uName\":\"$row[uName]\", \"lastCheck\":\"$row[lastCheck]\"";
 			echo "}";
-			if($i < $rowNum-1) {
+			if($i < $userNum-1) {
 				echo ",";
 			}
 		}
-		echo "]}";
+		echo "],";
+		if($roomResult = mysqli_query($con, $roomQuery)) {
+			$roomNum = mysqli_num_rows($roomResult);
+			echo "\"booknum\":\"$roomNum\",";
+			echo "\"roombooks\":";
+			echo "[";
+			for($i = 0; $i < $roomNum; $i++) {
+				$row = mysqli_fetch_array($roomResult);
+				echo "{";
+				echo "\"uNo\":\"$row[uNo]\", \"startTime\":\"$row[startTime]\", \"endTime\":\"$row[endTime]\"";
+				echo "}";
+				if($i < $roomNum-1) {
+					echo ",";
+				}
+			}
+			echo "],";
+		}
+		if($ledResult = mysqli_query($con, $ledQuery)) {
+			echo "\"led\":";
+			echo "[";
+			for($i = 0; $i < 8; $i++) {
+				$row = mysqli_fetch_array($ledResult);
+				echo "{";
+				echo "\"led_num\":\"$row[led_num]\", \"stmt\":\"$row[stmt]\"";
+				echo "}";
+				if($i < 7) {
+					echo ",";
+				}
+			}
+			echo "]";
+		}
+		echo "}";
 	} else {
 		echo "Database not available";
 	}
 }
 ?>
-
-
