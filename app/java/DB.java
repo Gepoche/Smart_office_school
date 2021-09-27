@@ -1,20 +1,39 @@
-package kr.icehs.intec.mdp_login;
+package kr.icehs.intec.nocovice_01;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class DB {
-    // URL of database (http form)
-    public final String dbUrl = "http://192.168.0.34";
 
-    // create http connection between parameter url using parameter request method
-    public HttpURLConnection createConnection(URL url, String requestMethod) throws Exception {
+    // entire user session
+    public static class session {
+        public static int uNo;
+    }
+
+    // make / delete reservation
+    public enum resvUpdateMode {
+        INSERT, DELETE
+    }
+
+    // create connection and returns ( parameters could exist )
+    private static HttpURLConnection createConnection(String requestMethod, @Nullable String params) throws Exception {
+        // null handling
+        // no adding parameters if theres no
+        URL url;
+        if(params != null) {
+            url = new URL(ServerInfo.serverHttp + params);
+        } else {
+            url = new URL(ServerInfo.serverHttp);
+        }
+
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod(requestMethod);
@@ -25,9 +44,9 @@ public class DB {
         return con;
     }
 
-    // get response of http connection set
-    public StringBuffer getHttpResponse(HttpURLConnection con) throws Exception {
-        Charset charset = Charset.forName("UTF-8");
+    // return http response
+    private static StringBuffer getHttpResponse(HttpURLConnection con) throws Exception {
+        Charset charset = StandardCharsets.UTF_8;
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset));
         String inputLine;
         StringBuffer response = new StringBuffer();
@@ -40,144 +59,146 @@ public class DB {
         return response;
     }
 
-    // returns elements from the database as json formatted String
-    public String sendGet() throws Exception {
-        URL obj = new URL(dbUrl);
-        HttpURLConnection con = createConnection(obj, "GET");
-        StringBuffer response = getHttpResponse(con);
-
-        return response.toString();
+    // return entire json data as String
+    public static String sendGet() throws Exception {
+        return getHttpResponse(createConnection("GET", null)).toString();
     }
 
-    // updates user of the database by uNo(user number)
-    // returns 0 if success
-    public int updateUser(String uNo, String uId, String uPw, String lastCheck) throws Exception {
-        String params = "?target=user&uNo=" + uNo + "&uId=" + uId + "&uPw=" + uPw + "&lastCheck=" + lastCheck;
+    // update user using uNo, return 0 if success
+    public static int updateUser(String uNo, String uId, String uPw, String lastCheck, int isAvailable) throws Exception {
+        String params = "?target=user" +
+                "&uNo=" + uNo +
+                "&uId=" + uId +
+                "&uPw=" + uPw +
+                "&lastCheck=" + lastCheck +
+                "&isAvailable=" + isAvailable;
 
-        URL obj = new URL(dbUrl + params);
-        HttpURLConnection con = createConnection(obj, "POST");
-        StringBuffer response = getHttpResponse(con);
+        String response = getHttpResponse(createConnection("POST", params)).toString();
 
-        if(response.toString().contains("successful")) {
+        if(response.contains("successful")) {
             return 0;
         } else {
             return 1;
         }
     }
 
-    // creates room reservation
-    // returns 0 if success
-    public int insertResv(String uNo, String startTime, String endTime) throws Exception {
-        String params = "?target=room&uNo=" + uNo + "&startTime=" + startTime + "&endTime=" + endTime + "&mode=ins";
+    // update user using current session data, return 0 if success
+    public static int updateUser(String uId, String uPw, String lastCheck, int isAvailable) throws Exception {
+        String params = "?target=user" +
+                "&uNo=" + session.uNo +
+                "&uId=" + uId +
+                "&uPw=" + uPw +
+                "&lastCheck=" + lastCheck +
+                "&isAvailable=" + isAvailable;
 
-        URL obj = new URL(dbUrl + params);
-        HttpURLConnection con = createConnection(obj, "POST");
-        StringBuffer response = getHttpResponse(con);
+        String response = getHttpResponse(createConnection("POST", params)).toString();
 
-        if(response.toString().contains("successful")) {
+        if(response.contains("successful")) {
             return 0;
         } else {
             return 1;
         }
     }
 
-    // deletes reservation
-    // returns 0 if success
-    public int deleteResv(String startTime) throws Exception {
-        String params = "?target=room&startTime=" + startTime + "&mode=del";
+    // update meeting room reservation using uNo, return 0 if success
+    public static int updateResv(resvUpdateMode mode, @Nullable String uNo, String startTime, @Nullable String endTime, @Nullable String keyValue) throws Exception {
+        String params = "?target=room";
+        if(mode == resvUpdateMode.INSERT) {
+            params +=
+                    "&uNo=" + uNo +
+                            "&startTime=" + startTime +
+                            "&endTime=" + endTime +
+                            "&mode=ins" +
+                            "&keyValue=" + keyValue;
+        } else if(mode == resvUpdateMode.DELETE) {
+            params +=
+                    "&startTime=" + startTime +
+                            "&mode=del";
+        } else {
+            return 1;
+        }
 
-        URL obj = new URL(dbUrl + params);
-        HttpURLConnection con = createConnection(obj, "POST");
-        StringBuffer response = getHttpResponse(con);
+        String response = getHttpResponse(createConnection("POST", params)).toString();
 
-        if(response.toString().contains("successful")) {
+        if(response.contains("successful")) {
             return 0;
         } else {
             return 1;
         }
     }
 
-    // updates LED/Light by parameter ledNum, range 1~8
-    // returns 0 if success
-    public int updateLED(int ledNum, int stmt) throws Exception {
-        String params = "?target=led&led_num=" + ledNum + "&stmt=" + stmt;
+    // update meeting room reservation using current session data, return 0 if success
+    public static int updateResv(resvUpdateMode mode, String startTime, @Nullable String endTime, @Nullable String keyValue) throws Exception {
+        String params = "?target=room";
+        if(mode == resvUpdateMode.INSERT) {
+            params +=
+                    "&uNo=" + session.uNo +
+                            "&startTime=" + startTime +
+                            "&endTime=" + endTime +
+                            "&mode=ins" +
+                            "&keyValue=" + keyValue;
+        } else if(mode == resvUpdateMode.DELETE) {
+            params +=
+                    "&startTime=" + startTime +
+                            "&mode=del";
+        } else {
+            return 1;
+        }
 
-        URL obj = new URL(dbUrl + params);
-        HttpURLConnection con = createConnection(obj, "POST");
-        StringBuffer response = getHttpResponse(con);
+        System.out.println(params);
 
-        if(response.toString().contains("successful")) {
+        String response = getHttpResponse(createConnection("POST", params)).toString();
+
+        if(response.contains("successful")) {
             return 0;
         } else {
             return 1;
         }
     }
 
-    // parses String data ro JSON array and returns it
-    public JSONArray jsonArrayParser(String stringData, String key) throws Exception {
-        JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject)jsonParser.parse(stringData);
-        JSONArray jsonArray = (JSONArray) jsonObject.get(key);
+    // update statement of lights of the building, doesn't actually makes changes to the hardware
+    // need updates in addition from the server
+    public static int updateLED(int ledNum, int stmt) throws Exception {
+        String params = "?target=led" +
+                "&led_num=" + ledNum +
+                "&stmt=" + stmt;
 
-        return jsonArray;
+        String response = getHttpResponse(createConnection("POST", params)).toString();
+
+        if(response.contains("successful")) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
-    // returns row number of key(ex: "name"), value(ex: "정재희") from jsonArray
-    // returns -1 if not existing
-    public int getNum(JSONArray jsonArray, String key, String value) {
-        for(int i=0; i < jsonArray.size(); i++) {
-            JSONObject jsonObj = (JSONObject)jsonArray.get(i);
+    // return StringBuffer of leds that are currently on
+    public static StringBuffer getLedCurrentlyOn() throws Exception {
+        StringBuffer currentlyOn = new StringBuffer();
+        DbTop dbTop = new Gson().fromJson(sendGet(), DbTop.class);
 
-            Object keyVal = jsonObj.get(key);
-            if(keyVal == null) {
-                return -1;
+        for(int i = 0; i < 8; i++) {
+            if(dbTop.led.get(i).stmt == 1) {
+                currentlyOn.append(i + 1);
             }
+        }
 
-            if(keyVal.toString().equals(value)) {
-                return i;
+        return currentlyOn;
+    }
+
+    // find particular user on login and returns uNo
+    // -1 if no user, -2 if wrong password
+    public static int findOnLogin(DbTop data, String id, String password) {
+        DbUsers[] userArr = data.users.toArray(new DbUsers[data.usernum]);
+
+        for(DbUsers user : userArr) {
+            if(user.uId.equals(id)) {
+                if(user.uPw.equals(password)) {
+                    return user.uNo;
+                }
+                return -2;
             }
         }
         return -1;
-    }
-
-    // returns value of key at the row of parameter index from jsonArray
-    // returns null if value not existing
-    public String getByNum(JSONArray jsonArray, String key, int index) {
-        JSONObject jsonObj = (JSONObject)jsonArray.get(index);
-
-        Object value = jsonObj.get(key);
-        if(value == null) {
-            return null;
-        }
-
-        return value.toString();
-    }
-
-    // returns date of server
-    // returns null if server not available
-    public String getDate() {
-        try {
-            String serverData = sendGet();
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject)jsonParser.parse(serverData);
-            return jsonObject.get("today").toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // returns time of server
-    // returns null if server not available
-    public String getTime() {
-        try {
-            String serverData = sendGet();
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject)jsonParser.parse(serverData);
-            return jsonObject.get("now").toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }
