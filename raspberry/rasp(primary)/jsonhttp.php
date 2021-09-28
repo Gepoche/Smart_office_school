@@ -8,13 +8,15 @@ if($_SERVER['REQUEST_METHOD']=='POST') {
 	$uId = $_GET['uId'];
 	$uPw = $_GET['uPw'];
 	$lastCheck = $_GET['lastCheck'];
+	$isAvailable = $_GET['isAvailable'];
 	$startTime = $_GET['startTime'];
 	$endTime = $_GET['endTime'];
+	$keyValue = $_GET['keyValue'];
 	$led_num = $_GET['led_num'];
 	$stmt = $_GET['stmt'];
 
 	if($target == "user") {
-		$query = "update user set uId='$uId', uPw='$uPw', lastCheck='$lastCheck' where uNo=$uNo";
+		$query = "update user set uId='$uId', uPw='$uPw', lastCheck='$lastCheck', isAvailable='$isAvailable' where uNo=$uNo";
 		if(mysqli_query($con, $query)) {
 			echo "update for uNo $uNo successful";
 		} else {
@@ -23,7 +25,7 @@ if($_SERVER['REQUEST_METHOD']=='POST') {
 	} else if($target == "room") {
 		$query = "";
 		if($mode == "ins") {
-			$query = "insert into room_book values($uNo, '$startTime', '$endTime')";
+			$query = "insert into room_book values($uNo, '$startTime', '$endTime', '$keyValue')";
 		} else if($mode == "del") {
 			$query = "delete from room_book where startTime = '$startTime'";
 		}
@@ -59,7 +61,7 @@ if($_SERVER['REQUEST_METHOD']=='POST') {
 		for($i = 0; $i < $userNum; $i++) {
 			$row = mysqli_fetch_array($userResult);
 			echo "{";
-			echo "\"uNo\":\"$row[uNo]\", \"uId\":\"$row[uId]\", \"uPw\":\"$row[uPw]\", \"uName\":\"$row[uName]\", \"lastCheck\":\"$row[lastCheck]\"";
+			echo "\"uNo\":\"$row[uNo]\", \"uId\":\"$row[uId]\", \"uPw\":\"$row[uPw]\", \"uName\":\"$row[uName]\", \"lastCheck\":\"$row[lastCheck]\", \"isAdmin\":\"$row[isAdmin]\", \"isAvailable\":\"$row[isAvailable]\"";
 			echo "}";
 			if($i < $userNum-1) {
 				echo ",";
@@ -74,7 +76,7 @@ if($_SERVER['REQUEST_METHOD']=='POST') {
 			for($i = 0; $i < $roomNum; $i++) {
 				$row = mysqli_fetch_array($roomResult);
 				echo "{";
-				echo "\"uNo\":\"$row[uNo]\", \"startTime\":\"$row[startTime]\", \"endTime\":\"$row[endTime]\"";
+				echo "\"uNo\":\"$row[uNo]\", \"startTime\":\"$row[startTime]\", \"endTime\":\"$row[endTime]\", \"keyValue\":\"$row[keyValue]\"";
 				echo "}";
 				if($i < $roomNum-1) {
 					echo ",";
@@ -102,3 +104,5 @@ if($_SERVER['REQUEST_METHOD']=='POST') {
 	}
 }
 ?>
+
+
