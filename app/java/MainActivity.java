@@ -20,8 +20,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
+        setContentView(binding.getRoot());
 
         binding.checkInBtn.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), CheckActivity.class)));
         binding.elevatorInBtn.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), ElevatorActivity.class)));

@@ -2,6 +2,7 @@ package kr.icehs.intec.nocovice_01;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.bumptech.glide.Glide;
@@ -19,7 +20,12 @@ public class QrDialog extends AppCompatActivity {
         binding = ActivityQrDialogBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // getStringExtra 해서 bindng.imageView에 이미지 넣기
-        // binding.button에 onClickListener로 나가는거 넣기
+        Intent intent = getIntent();
+        System.out.println(getFileStreamPath("qr").getPath() + "resvon" + intent.getStringExtra("filename") + "by" + DB.session.uNo + ".png");
+        Glide.with(getApplicationContext()).load(new File(intent.getStringExtra("filename"))).into(binding.imageView);
+
+        binding.button.setOnClickListener(v -> {
+            finish();
+        });
     }
 }

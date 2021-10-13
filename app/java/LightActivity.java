@@ -24,12 +24,13 @@ public class LightActivity extends AppCompatActivity {
     ImageView[] imageViewsOn;
     ImageButton[] powerOnOff;
 
+    volatile boolean threadReady = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = LightBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
+        setContentView(binding.getRoot());
 
         initializeLayout();
         binding.refreshLayout.setOnRefreshListener(() -> {
@@ -40,19 +41,32 @@ public class LightActivity extends AppCompatActivity {
         powerOnOff[0].setOnClickListener(v -> {
             int statusToChange = getStatusToChange(0);
 
-            for(int i = 1; i < 9; i++) {
-                int finalI = i;
-                Needle.onBackgroundThread().execute(() -> {
-                    try {
-                        DB.updateLED(finalI, statusToChange);
-                    } catch(Exception e) {
-                        e.printStackTrace();
+            Needle.onBackgroundThread().execute(new UiRelatedProgressTask<Void, Void>() {
+                @Override
+                protected Void doWork() {
+                    for(int i = 1; i < 9; i++) {
+                        try {
+                            DB.updateLED(i, statusToChange);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                });
-                imageViewsOn[i].setVisibility(VISIBILITY[statusToChange]);
-            }
-            imageViewsOn[0].setVisibility(VISIBILITY[statusToChange]);
-            requestUpdateOnLed();
+                    return null;
+                }
+
+                @Override
+                protected void thenDoUiRelatedWork(Void unused) {
+                    for(int i = 0; i < 9; i++) {
+                        imageViewsOn[i].setVisibility(VISIBILITY[statusToChange]);
+                    }
+                    requestUpdateOnLed();
+                }
+
+                @Override
+                protected void onProgressUpdate(Void unused) {
+
+                }
+            });
         });
 
         for(int i = 1; i < 9; i++) {
@@ -60,21 +74,36 @@ public class LightActivity extends AppCompatActivity {
             powerOnOff[i].setOnClickListener(v -> {
                 int statusToChange = getStatusToChange(finalI);
 
-                Needle.onBackgroundThread().execute(() -> {
-                    try {
-                        DB.updateLED(finalI, statusToChange);
-                    } catch(Exception e) {
-                        e.printStackTrace();
+                Needle.onBackgroundThread().execute(new UiRelatedProgressTask<Void, Void>() {
+                    @Override
+                    protected Void doWork() {
+                        try {
+                            DB.updateLED(finalI, statusToChange);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void thenDoUiRelatedWork(Void unused) {
+                        imageViewsOn[finalI].setVisibility(VISIBILITY[statusToChange]);
+                        requestUpdateOnLed();
+
+                        if(checkIfAllOn()) {
+                            imageViewsOn[0].setVisibility(View.VISIBLE);
+                        } else {
+                            imageViewsOn[0].setVisibility(View.INVISIBLE);
+                        }
+                    }
+
+                    @Override
+                    protected void onProgressUpdate(Void unused) {
+
                     }
                 });
-                imageViewsOn[finalI].setVisibility(VISIBILITY[statusToChange]);
-                requestUpdateOnLed();
 
-                if(checkIfAllOn()) {
-                    imageViewsOn[0].setVisibility(View.VISIBLE);
-                } else {
-                    imageViewsOn[0].setVisibility(View.INVISIBLE);
-                }
+
             });
         }
     }

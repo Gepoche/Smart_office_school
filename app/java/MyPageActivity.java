@@ -16,8 +16,7 @@ public class MyPageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = MypageBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
+        setContentView(binding.getRoot());
 
         binding.showQrButton.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), QrActivity.class)));
     }

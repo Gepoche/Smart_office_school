@@ -26,8 +26,7 @@ public class CheckActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = CheckBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
+        setContentView(binding.getRoot());
 
         try {
             Needle.onBackgroundThread().execute(new UiRelatedProgressTask<DbTop, Void>() {
