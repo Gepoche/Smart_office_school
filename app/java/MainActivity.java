@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import kr.icehs.intec.nocovice_01.databinding.ActivityMainBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void userDataInitialize() {
-        Needle.onBackgroundThread().execute(new UiRelatedProgressTask<DbTop, Void>() {
+        Needle.onBackgroundThread().execute(new UiRelatedTask<DbTop>() {
             @Override
             protected DbTop doWork() {
                 try {
@@ -59,11 +60,6 @@ public class MainActivity extends AppCompatActivity {
                     binding.statusAttend.setVisibility(View.INVISIBLE);
                     binding.statusNotAttend.setVisibility(View.VISIBLE);
                 }
-            }
-
-            @Override
-            protected void onProgressUpdate(Void unused) {
-
             }
         });
     }

@@ -10,4 +10,5 @@ public class DbTop {
     int booknum;
     ArrayList<DbRoomBooks> roombooks = new ArrayList<>();
     ArrayList<DbLed> led = new ArrayList<>();
+    int elevator;
 }

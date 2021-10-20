@@ -19,6 +19,7 @@ import kr.icehs.intec.nocovice_01.databinding.ActivityQrBinding;
 import kr.icehs.intec.nocovice_01.databinding.QrItemBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class QrActivity extends AppCompatActivity {
 
@@ -32,7 +33,7 @@ public class QrActivity extends AppCompatActivity {
 
         binding.qrRecycler.setLayoutManager(new LinearLayoutManager(this));
 
-        Needle.onBackgroundThread().execute(new UiRelatedProgressTask<DbTop, Void>() {
+        Needle.onBackgroundThread().execute(new UiRelatedTask<DbTop>() {
             @Override
             protected DbTop doWork() {
                 try {
@@ -55,17 +56,12 @@ public class QrActivity extends AppCompatActivity {
                 }
                 binding.qrRecycler.setAdapter(new QrAdapter(items));
             }
-
-            @Override
-            protected void onProgressUpdate(Void unused) {
-
-            }
         });
     }
 
     private class QrAdapter extends RecyclerView.Adapter<QrAdapter.QrViewHolder> {
 
-        private ArrayList<String> items;
+        private final ArrayList<String> items;
 
         private class QrViewHolder extends RecyclerView.ViewHolder {
             QrItemBinding binding;

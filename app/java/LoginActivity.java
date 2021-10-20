@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import kr.icehs.intec.nocovice_01.databinding.LoginBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -48,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
                 editor.apply();
             }
 
-            Needle.onBackgroundThread().execute(new UiRelatedProgressTask<String, Void>() {
+            Needle.onBackgroundThread().execute(new UiRelatedTask<String>() {
 
                 // network process thread
                 @Override
@@ -128,10 +129,6 @@ public class LoginActivity extends AppCompatActivity {
                             startActivity(nextScreenIntent);
                             break;
                     }
-                }
-
-                @Override
-                protected void onProgressUpdate(Void unused) {
                 }
             });
         });

@@ -17,6 +17,7 @@ import kr.icehs.intec.nocovice_01.databinding.ActivityMainBinding;
 import kr.icehs.intec.nocovice_01.databinding.CheckBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class CheckActivity extends AppCompatActivity {
 
@@ -29,7 +30,7 @@ public class CheckActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         try {
-            Needle.onBackgroundThread().execute(new UiRelatedProgressTask<DbTop, Void>() {
+            Needle.onBackgroundThread().execute(new UiRelatedTask<DbTop>() {
                 @Override
                 protected DbTop doWork() {
                     try {
@@ -84,7 +85,7 @@ public class CheckActivity extends AppCompatActivity {
                             // dayend
                         } else {
                             // new thread task for network process
-                            Needle.onBackgroundThread().execute(new UiRelatedProgressTask<Integer, Void>() {
+                            Needle.onBackgroundThread().execute(new UiRelatedTask<Integer>() {
                                 @Override
                                 protected Integer doWork() {
                                     // at least 8 hours
@@ -100,19 +101,9 @@ public class CheckActivity extends AppCompatActivity {
                                         Toast.makeText(CheckActivity.this, "아직 퇴근하실 수 없습니다.", Toast.LENGTH_SHORT).show();
                                     }
                                 }
-
-                                @Override
-                                protected void onProgressUpdate(Void unused) {
-
-                                }
                             });
                         }
                     });
-                }
-
-                @Override
-                protected void onProgressUpdate(Void unused) {
-
                 }
             });
         } catch(Exception e) {

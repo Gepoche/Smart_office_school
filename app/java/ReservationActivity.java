@@ -28,6 +28,7 @@ import java.util.Random;
 import kr.icehs.intec.nocovice_01.databinding.ReservationBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class ReservationActivity extends AppCompatActivity {
 
@@ -153,7 +154,7 @@ public class ReservationActivity extends AppCompatActivity {
         int selectedMonth = binding.datePicker.getMonth() + 1;
         int selectedDay = binding.datePicker.getDayOfMonth();
 
-        Needle.onBackgroundThread().execute(new UiRelatedProgressTask<DbTop, Void>() {
+        Needle.onBackgroundThread().execute(new UiRelatedTask<DbTop>() {
             @Override
             protected DbTop doWork() {
                 try {
@@ -202,11 +203,6 @@ public class ReservationActivity extends AppCompatActivity {
                         }
                     }
                 }
-            }
-
-            @Override
-            protected void onProgressUpdate(Void unused) {
-
             }
         });
     }

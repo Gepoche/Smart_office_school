@@ -14,6 +14,7 @@ import com.android.volley.toolbox.Volley;
 import kr.icehs.intec.nocovice_01.databinding.LightBinding;
 import needle.Needle;
 import needle.UiRelatedProgressTask;
+import needle.UiRelatedTask;
 
 public class LightActivity extends AppCompatActivity {
 
@@ -23,8 +24,6 @@ public class LightActivity extends AppCompatActivity {
 
     ImageView[] imageViewsOn;
     ImageButton[] powerOnOff;
-
-    volatile boolean threadReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +40,7 @@ public class LightActivity extends AppCompatActivity {
         powerOnOff[0].setOnClickListener(v -> {
             int statusToChange = getStatusToChange(0);
 
-            Needle.onBackgroundThread().execute(new UiRelatedProgressTask<Void, Void>() {
+            Needle.onBackgroundThread().execute(new UiRelatedTask<Void>() {
                 @Override
                 protected Void doWork() {
                     for(int i = 1; i < 9; i++) {
@@ -61,11 +60,6 @@ public class LightActivity extends AppCompatActivity {
                     }
                     requestUpdateOnLed();
                 }
-
-                @Override
-                protected void onProgressUpdate(Void unused) {
-
-                }
             });
         });
 
@@ -74,7 +68,7 @@ public class LightActivity extends AppCompatActivity {
             powerOnOff[i].setOnClickListener(v -> {
                 int statusToChange = getStatusToChange(finalI);
 
-                Needle.onBackgroundThread().execute(new UiRelatedProgressTask<Void, Void>() {
+                Needle.onBackgroundThread().execute(new UiRelatedTask<Void>() {
                     @Override
                     protected Void doWork() {
                         try {
@@ -96,11 +90,6 @@ public class LightActivity extends AppCompatActivity {
                             imageViewsOn[0].setVisibility(View.INVISIBLE);
                         }
                     }
-
-                    @Override
-                    protected void onProgressUpdate(Void unused) {
-
-                    }
                 });
 
 
@@ -110,7 +99,7 @@ public class LightActivity extends AppCompatActivity {
 
     private void initializeLayout() {
         buildComponentArray();
-        Needle.onBackgroundThread().execute(new UiRelatedProgressTask<StringBuffer, Void>() {
+        Needle.onBackgroundThread().execute(new UiRelatedTask<StringBuffer>() {
             @Override
             protected StringBuffer doWork() {
                 try {
@@ -124,11 +113,6 @@ public class LightActivity extends AppCompatActivity {
             @Override
             protected void thenDoUiRelatedWork(StringBuffer currentlyOn) {
                 initializeLightStatus(currentlyOn);
-            }
-
-            @Override
-            protected void onProgressUpdate(Void unused) {
-
             }
         });
     }

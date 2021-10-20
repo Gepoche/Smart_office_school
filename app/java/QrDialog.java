@@ -21,7 +21,7 @@ public class QrDialog extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         Intent intent = getIntent();
-        System.out.println(getFileStreamPath("qr").getPath() + "resvon" + intent.getStringExtra("filename") + "by" + DB.session.uNo + ".png");
+        binding.textView.setText(intent.getStringExtra("filename"));
         Glide.with(getApplicationContext()).load(new File(intent.getStringExtra("filename"))).into(binding.imageView);
 
         binding.button.setOnClickListener(v -> {
